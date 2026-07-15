@@ -72,7 +72,18 @@ Since the api-server artifact (kind="api") can't be created via `createArtifact`
 ## drizzle-kit push Requires TTY
 `drizzle-kit push` (and `push-force`) fail in non-interactive shells with "Interactive prompts require a TTY terminal". On a fresh DB, create Drizzle-managed tables via `executeSql()` using raw SQL matching the schema definitions in `lib/db/src/schema/`. The `scripts/src/migrate.ts` only handles users, agency_settings, and sessions — the rest (clients, projects, etc.) must be created separately.
 
+## Object Storage (GCS — Document Vault)
+- Bucket: `replit-objstore-c8bffa7f-292a-4160-a7e4-647351d03c6a` (provisioned, secrets set)
+- Server files: `artifacts/api-server/src/lib/objectStorage.ts` + `objectAcl.ts` (copied from skill templates)
+- Routes: `artifacts/api-server/src/routes/storage.ts` — mounted after `requireAuth` in routes/index.ts
+  - `POST /api/storage/uploads/request-url` — presigned URL; validated by session auth only (no api-zod import)
+  - `GET /api/storage/objects/*path` — streams private objects; images/PDFs inline, others as attachment
+- File-backed documents: `url` field stores `objectPath` (e.g. `/objects/uploads/<uuid>`). Detect with `url.startsWith("/objects/")`. Serve URL: `/api/storage` + objectPath.
+- On document delete: GCS object is cleaned up fire-and-forget in `documents.ts`
+- **No Uppy / object-storage-web package**: upload flow implemented inline in the frontend with plain `fetch` (no extra deps needed)
+
 ## Run Order for Fresh Setup
 1. Create all tables via `executeSql` (or `pnpm --filter @workspace/scripts run migrate` for the 3 manual tables)
-2. `pnpm --filter @workspace/scripts run seed` — demo data + default admin user
-3. Artifact workflows start automatically once registered
+2. Create sessions table manually if missing (connect-pg-simple standard schema — see sessions section above)
+3. `pnpm --filter @workspace/scripts run seed` — demo data + default admin user
+4. Artifact workflows start automatically once registered

@@ -2,6 +2,7 @@ import { Router, type IRouter } from "express";
 import { requireAuth } from "../middleware/auth";
 import healthRouter from "./health";
 import authRouter from "./auth";
+import storageRouter from "./storage";
 import settingsApiRouter from "./settings-api";
 import clientsRouter from "./clients";
 import projectsRouter from "./projects";
@@ -30,6 +31,7 @@ router.use(authRouter);   // /auth/login, /auth/logout, /auth/me (me checks inte
 router.use(requireAuth);
 
 // ── Protected routes ──────────────────────────────────────────────────────────
+router.use(storageRouter);
 router.use(settingsApiRouter);
 router.use(dashboardRouter);
 router.use(clientsRouter);

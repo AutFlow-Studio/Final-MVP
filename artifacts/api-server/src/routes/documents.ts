@@ -9,6 +9,9 @@ import {
   UpdateDocumentBody,
   DeleteDocumentParams,
 } from "@workspace/api-zod";
+import { ObjectStorageService, ObjectNotFoundError } from "../lib/objectStorage";
+
+const objectStorage = new ObjectStorageService();
 
 const router: IRouter = Router();
 
@@ -120,6 +123,14 @@ router.delete("/documents/:id", async (req, res): Promise<void> => {
   if (!doc) {
     res.status(404).json({ error: "Document not found" });
     return;
+  }
+
+  // Fire-and-forget GCS cleanup for file-backed documents
+  if (doc.url?.startsWith("/objects/")) {
+    objectStorage
+      .getObjectEntityFile(doc.url)
+      .then((file) => file.delete())
+      .catch(() => { /* object may already be gone — ignore */ });
   }
 
   res.sendStatus(204);
