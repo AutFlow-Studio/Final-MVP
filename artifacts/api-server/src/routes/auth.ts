@@ -4,6 +4,7 @@ import bcrypt from "bcryptjs";
 import { db, usersTable } from "@workspace/db";
 import type { PublicUser } from "@workspace/db";
 import { requireAuth } from "../middleware/auth";
+import { loginRateLimiter } from "../middleware/rate-limit";
 
 const router: IRouter = Router();
 
@@ -14,7 +15,7 @@ function sanitizeUser(u: typeof usersTable.$inferSelect): PublicUser {
 }
 
 // POST /api/auth/login
-router.post("/auth/login", async (req, res): Promise<void> => {
+router.post("/auth/login", loginRateLimiter, async (req, res): Promise<void> => {
   const { email, password } = req.body ?? {};
   if (!email || !password) {
     res.status(400).json({ error: "Email and password are required" });
