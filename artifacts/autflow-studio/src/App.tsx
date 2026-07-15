@@ -22,6 +22,7 @@ import ReportsView from '@/pages/reports/index';
 import TasksList from '@/pages/tasks/index';
 import SearchResults from '@/pages/search/index';
 import SettingsView from '@/pages/settings/index';
+import MeetingsList from '@/pages/meetings/index';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -45,6 +46,7 @@ function Router() {
       <Route path="/projects" component={ProjectsList} />
       <Route path="/projects/:id" component={ProjectDetail} />
       <Route path="/payments" component={PaymentsList} />
+      <Route path="/meetings" component={MeetingsList} />
       <Route path="/calendar" component={CalendarView} />
       <Route path="/documents" component={DocumentsList} />
       <Route path="/reports" component={ReportsView} />

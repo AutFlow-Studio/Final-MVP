@@ -9,6 +9,20 @@ import {
   UpdateMeetingBody,
   DeleteMeetingParams,
 } from "@workspace/api-zod";
+import { ObjectStorageService, ObjectNotFoundError } from "../lib/objectStorage";
+
+const objectStorage = new ObjectStorageService();
+
+/** Parse the JSON-encoded attachments array stored in the text column. */
+function parseAttachmentPaths(raw: string | null | undefined): string[] {
+  if (!raw) return [];
+  try {
+    const items = JSON.parse(raw) as Array<{ objectPath?: string }>;
+    return Array.isArray(items) ? items.map((i) => i.objectPath).filter((p): p is string => !!p) : [];
+  } catch {
+    return [];
+  }
+}
 
 const router: IRouter = Router();
 
@@ -143,6 +157,15 @@ router.delete("/meetings/:id", async (req, res): Promise<void> => {
   if (!meeting) {
     res.status(404).json({ error: "Meeting not found" });
     return;
+  }
+
+  // Fire-and-forget GCS cleanup for any file attachments
+  const paths = parseAttachmentPaths(meeting.attachments);
+  for (const objectPath of paths) {
+    objectStorage
+      .getObjectEntityFile(objectPath)
+      .then((f) => f.delete())
+      .catch(() => { /* already gone — ignore */ });
   }
 
   res.sendStatus(204);

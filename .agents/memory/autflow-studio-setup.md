@@ -72,6 +72,15 @@ Since the api-server artifact (kind="api") can't be created via `createArtifact`
 ## drizzle-kit push Requires TTY
 `drizzle-kit push` (and `push-force`) fail in non-interactive shells with "Interactive prompts require a TTY terminal". On a fresh DB, create Drizzle-managed tables via `executeSql()` using raw SQL matching the schema definitions in `lib/db/src/schema/`. The `scripts/src/migrate.ts` only handles users, agency_settings, and sessions — the rest (clients, projects, etc.) must be created separately.
 
+## Meetings Page
+- Route: `/meetings` — full CRUD page at `artifacts/autflow-studio/src/pages/meetings/index.tsx`
+- Sidebar nav item added (CalendarDays icon, between Tasks and Calendar)
+- `App.tsx` import: `MeetingsList from '@/pages/meetings/index'`
+- Attachments stored as JSON in the existing `attachments text` column — no DB schema change
+- Format: `[{objectPath, name, size, contentType}]`
+- Individual attachment delete calls `DELETE /api/storage/objects/*path` (added to storage.ts)
+- Meeting DELETE route cleans up GCS objects from attachments JSON (fire-and-forget)
+
 ## Object Storage (GCS — Document Vault)
 - Bucket: `replit-objstore-c8bffa7f-292a-4160-a7e4-647351d03c6a` (provisioned, secrets set)
 - Server files: `artifacts/api-server/src/lib/objectStorage.ts` + `objectAcl.ts` (copied from skill templates)

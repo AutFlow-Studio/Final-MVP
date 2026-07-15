@@ -57,6 +57,7 @@ const NAV_ITEMS = [
   { href: "/clients", label: "Clients", icon: Users },
   { href: "/projects", label: "Projects", icon: Briefcase },
   { href: "/tasks", label: "Tasks", icon: CheckSquare },
+  { href: "/meetings", label: "Meetings", icon: CalendarDays },
   { href: "/calendar", label: "Calendar", icon: CalendarDays },
   { href: "/payments", label: "Payments", icon: CreditCard },
   { href: "/documents", label: "Documents", icon: Files },

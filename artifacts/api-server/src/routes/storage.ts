@@ -81,4 +81,30 @@ router.get("/storage/objects/*path", async (req: Request, res: Response) => {
   }
 });
 
+/**
+ * DELETE /storage/objects/*path
+ *
+ * Delete a private GCS object by its object path.
+ * Auth is enforced by the requireAuth middleware in routes/index.ts.
+ * Idempotent: returns 204 even if the object is already gone.
+ */
+router.delete("/storage/objects/*path", async (req: Request, res: Response) => {
+  try {
+    const raw = req.params.path;
+    const wildcardPath = Array.isArray(raw) ? raw.join("/") : raw;
+    const objectPath = `/objects/${wildcardPath}`;
+
+    const objectFile = await objectStorageService.getObjectEntityFile(objectPath);
+    await objectFile.delete();
+    res.sendStatus(204);
+  } catch (error) {
+    if (error instanceof ObjectNotFoundError) {
+      res.sendStatus(204); // already deleted — treat as success
+      return;
+    }
+    req.log.error({ err: error }, "Error deleting object");
+    res.status(500).json({ error: "Failed to delete object" });
+  }
+});
+
 export default router;
